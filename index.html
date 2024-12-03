@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Simple Calculator</title>
+    <style>
+      body {
+        background-color: #ffffff;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-direction: column;
+        font-family: "Roboto", sans-serif;
+        min-height: 100vh;
+        margin: 0;
+      }
+
+      .calculator {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        width: 100%;
+        max-width: 400px;
+        padding: 20px;
+        box-sizing: border-box;
+        border-radius: 16px;
+        border: 5px solid #333;
+      }
+
+      .pad {
+        width: 100%;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+      }
+
+      button {
+        flex: 1 1 calc(25% - 6px);
+        height: 65px;
+        font-size: 28px;
+        border: none;
+        border-radius: 8px;
+        font-weight: 400;
+        cursor: pointer;
+        transition: filter 0.1s;
+        min-width: 0;
+      }
+
+      button:active {
+        filter: brightness(1.4);
+      }
+
+      .cell {
+        background-color: #333333;
+        color: #d9d9d9;
+      }
+
+      .cell:hover {
+        filter: brightness(1.2);
+      }
+
+      .cell.zero {
+        flex: 1 1 calc(50% - 6px);
+      }
+
+      .operator {
+        background-color: #ff9f0a;
+        color: #ffffff;
+      }
+
+      .operator:hover {
+        filter: brightness(1.1);
+      }
+
+      .delete {
+        background-color: #9b9b9b;
+        color: #000;
+      }
+
+      .delete:hover {
+        filter: brightness(1.1);
+      }
+
+      .display {
+        background-color: transparent;
+        width: 100%;
+        min-height: 120px;
+        padding: 20px;
+        box-sizing: border-box;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        justify-content: flex-end;
+        gap: 0.75rem;
+        margin-bottom: 10px;
+        overflow: hidden;
+        border: 3px solid #333;
+        border-radius: 8px;
+        color: #000000;
+      }
+
+      .calculation-display {
+        font-size: 1.2rem;
+        height: 1.2rem;
+        color: rgba(55, 55, 55, 0.6);
+        font-weight: 300;
+        overflow-x: hidden;
+        max-width: 300px;
+        max-height: 20px;
+      }
+
+      .result-display {
+        font-size: 3.5rem;
+        height: 3.5rem;
+        color: #000000;
+        font-weight: 300;
+      }
+
+      h1 {
+        color: #000000;
+        margin-bottom: 2rem;
+        font-weight: 500;
+        font-size: 2.5rem;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="calculator">
+      <div class="display">
+        <div class="calculation-display"></div>
+        <div class="result-display"></div>
+      </div>
+      <div class="pad">
+        <button type="button" class="delete clear-all">CE</button>
+        <button type="button" class="delete negative">+/-</button>
+        <button type="button" class="delete backspace">&larr;</button>
+        <button type="button" id="divide" class="operator">/</button>
+
+        <button type="button" class="cell">7</button>
+        <button type="button" class="cell">8</button>
+        <button type="button" class="cell">9</button>
+        <button type="button" id="multiply" class="operator">*</button>
+
+        <button type="button" class="cell">4</button>
+        <button type="button" class="cell">5</button>
+        <button type="button" class="cell">6</button>
+        <button type="button" id="subtract" class="operator">-</button>
+
+        <button type="button" class="cell">1</button>
+        <button type="button" class="cell">2</button>
+        <button type="button" class="cell">3</button>
+        <button type="button" id="add" class="operator">+</button>
+
+        <button type="button" class="cell zero">0</button>
+        <button type="button" class="cell comma">.</button>
+        <button type="button" id="equals" class="operator">=</button>
+      </div>
+    </div>
+    <script>
+      function add(a, b) {
+        return Number((parseFloat(a) + parseFloat(b)).toFixed(5));
+      }
+      function subtract(a, b) {
+        return Number((parseFloat(a) - parseFloat(b)).toFixed(5));
+      }
+      function multiply(a, b) {
+        return Number((parseFloat(a) * parseFloat(b)).toFixed(5));
+      }
+      function divide(a, b) {
+        return b === "0" || b === 0
+          ? "Can't divide by zero. :P"
+          : Number((parseFloat(a) / parseFloat(b)).toFixed(5));
+      }
+
+      const operators = {
+        "+": add,
+        "-": subtract,
+        "*": multiply,
+        "/": divide,
+      };
+
+      let a = undefined;
+      let b = undefined;
+      let operator = undefined;
+      let result = undefined;
+
+      const operate = (a, b, operator) => operator(a, b);
+
+      const elements = {
+        cellButtons: document.querySelectorAll(".cell"),
+        equalsButton: document.querySelector("#equals"),
+        clearAllButton: document.querySelector(".clear-all"),
+        negativeButton: document.querySelector(".negative"),
+        commaButton: document.querySelector(".comma"),
+        display: document.querySelector(".result-display"),
+        calculationDisplay: document.querySelector(".calculation-display"),
+        operatorButtons: document.querySelectorAll(".operator"),
+        backspaceButton: document.querySelector(".backspace"),
+      };
+
+      console.log(elements.operatorButtons);
+
+      const updateDisplay = (content) => {
+        elements.display.textContent = content;
+      };
+
+      const updateCalculationDisplay = (content) => {
+        elements.calculationDisplay.textContent = content;
+      };
+
+      const keyboardMap = {
+        Enter: () => elements.equalsButton.click(),
+        Backspace: () => elements.backspaceButton.click(),
+        Escape: () => elements.clearAllButton.click(),
+        "+": () => elements.operatorButtons[3].click(),
+        "-": () => elements.operatorButtons[2].click(),
+        "*": () => elements.operatorButtons[1].click(),
+        "/": () => elements.operatorButtons[0].click(),
+        ".": () => elements.commaButton.click(),
+      };
+
+      for (let i = 0; i <= 9; i++) {
+        keyboardMap[i.toString()] = () => {
+          const numberButton = Array.from(elements.cellButtons).find(
+            (button) => button.textContent === i.toString()
+          );
+          if (numberButton) numberButton.click();
+        };
+      }
+
+      document.addEventListener("keydown", (event) => {
+        const handler = keyboardMap[event.key];
+        if (handler) handler();
+      });
+
+      elements.cellButtons.forEach((button) => {
+        button.addEventListener("click", () => {
+          if (
+            button.classList.contains("comma") &&
+            elements.display.textContent.includes(".")
+          ) {
+            return;
+          }
+
+          updateDisplay(elements.display.textContent + button.textContent);
+        });
+      });
+
+      elements.operatorButtons.forEach((button) => {
+        button.addEventListener("click", () => {
+          if (button.id === "equals") return;
+
+          const displayContent = elements.display.textContent;
+
+          if (
+            a === undefined ||
+            (operator === undefined && displayContent !== "")
+          ) {
+            a = displayContent || a;
+            operator = operators[button.textContent];
+            updateCalculationDisplay(`${a} ${button.textContent}`);
+            updateDisplay("");
+            return;
+          }
+
+          if (displayContent === "") {
+            operator = operators[button.textContent];
+            updateCalculationDisplay(`${a} ${button.textContent}`);
+            return;
+          }
+
+          if (b === undefined && displayContent !== "") {
+            b = displayContent;
+            result = operate(a, b, operator);
+            updateCalculationDisplay(
+              `${elements.calculationDisplay.textContent} ${b} ${button.textContent}`
+            );
+            updateDisplay("");
+            a = result;
+            b = undefined;
+            operator = operators[button.textContent];
+            return;
+          }
+
+          operator = operators[button.textContent];
+          updateCalculationDisplay(
+            `${elements.calculationDisplay.textContent} ${button.textContent}`
+          );
+          updateDisplay("");
+        });
+      });
+
+      elements.equalsButton.addEventListener("click", () => {
+        const displayContent = elements.display.textContent;
+
+        if (!operator || a === undefined) return;
+
+        if (b === undefined && displayContent !== "") {
+          b = displayContent;
+          result = operate(a, b, operator);
+          updateCalculationDisplay(
+            `${elements.calculationDisplay.textContent} ${b}`
+          );
+        }
+
+        updateDisplay(result);
+        a = result;
+        b = undefined;
+        operator = undefined;
+        result = undefined;
+      });
+
+      elements.backspaceButton.addEventListener("click", () => {
+        updateDisplay(elements.display.textContent.slice(0, -1));
+      });
+
+      elements.clearAllButton.addEventListener("click", () => {
+        updateDisplay("");
+        updateCalculationDisplay("");
+        a = undefined;
+        b = undefined;
+        operator = undefined;
+        result = undefined;
+      });
+
+      elements.negativeButton.addEventListener("click", () => {
+        const currentValue = elements.display.textContent;
+        if (currentValue === "") return;
+        updateDisplay(parseFloat(currentValue) * -1);
+      });
+    </script>
+  </body>
+</html>
